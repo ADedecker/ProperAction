@@ -14,7 +14,8 @@ lemma IsProperMap.comp {f : X → Y} {g : Y → Z} (hf : IsProperMap f) (hg : Is
     constructor
     apply hg.continuous.comp hf.continuous
     intro F z h
-    have ⟨y, hy1, hy2⟩ : ∃ y : Y, g y = z ∧ ClusterPt y (F.map f) := hg.clusterPt_of_mapClusterPt h
+    rw [MapClusterPt, ← Filter.map_map] at h
+    rcases hg.clusterPt_of_mapClusterPt h with ⟨y, hy1, hy2⟩
     rcases hf.clusterPt_of_mapClusterPt hy2 with ⟨x, hx1, hx2⟩
     use x
     constructor
