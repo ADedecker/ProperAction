@@ -40,7 +40,19 @@ instance [ProperSMul G X] : ContinuousSMul G X where
 ### Some typical cases of proper actions
 -/
 
-instance [ProperSMul G X] [ProperSMul G Y] : ProperSMul G (X × Y) where
+open Filter Topology
+
+theorem foo : ProperSMul G X ↔ (∀ ℱ : Filter (G × X), ∀ x₁ x₂ : X,
+    ClusterPt (x₁, x₂) (map (fun gx ↦ ⟨gx.1 • gx.2, gx.2⟩ : G × X → X × X) ℱ) →
+    ∃ g : G, x₁ = g • x₂ ∧ ClusterPt g (map Prod.fst ℱ)) :=
+  sorry
+
+theorem foo_ultrafilter : ProperSMul G X ↔ (∀ ℱ : Ultrafilter (G × X), ∀ x₁ x₂ : X,
+    Tendsto (fun gx ↦ ⟨gx.1 • gx.2, gx.2⟩ : G × X → X × X) ℱ (𝓝 (x₁, x₂)) →
+    ∃ g : G, Tendsto Prod.fst (ℱ : Filter (G × X)) (𝓝 g)) :=
+  sorry
+
+instance [ProperSMul G X] [ContinuousSMul G X]: ProperSMul G (X × Y) where
   isProperMap_smul_pair' := sorry
 
 instance {ι : Type*} {X : ι → Type*} [Π i, TopologicalSpace (X i)] [Π i, MulAction G (X i)]
