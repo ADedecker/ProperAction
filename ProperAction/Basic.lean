@@ -40,8 +40,19 @@ instance [ProperSMul G X] : ContinuousSMul G X where
 ### Some typical cases of proper actions
 -/
 
-instance [ProperSMul G X] [ProperSMul G Y] : ProperSMul G (X × Y) where
-  isProperMap_smul_pair' := sorry
+instance [ProperSMul G X] [ContinuousSMul G Y] : ProperSMul G (X × Y) where
+  isProperMap_smul_pair' := by
+    constructor
+    · rw [continuous_prod_mk]
+      constructor
+      apply Continuous.smul
+      apply continuous_fst
+      apply continuous_snd
+      apply continuous_snd
+    · intro F y h
+      have : MapClusterPt (y.1.1, y.2.1) F (fun gxy => (gxy.1 • gxy.2.1, gxy.2.1)) := by sorry
+      sorry
+
 
 instance {ι : Type*} {X : ι → Type*} [Π i, TopologicalSpace (X i)] [Π i, MulAction G (X i)]
     [∀ i, ProperSMul G (X i)] : ProperSMul G (Π i, X i) where
