@@ -47,7 +47,7 @@ theorem foo : ProperSMul G X ↔ (∀ ℱ : Filter (G × X), ∀ x₁ x₂ : X,
     ∃ g : G, x₁ = g • x₂ ∧ ClusterPt g (map Prod.fst ℱ)) :=
   sorry
 
-theorem foo_ultrafilter : ProperSMul G X ↔ (∀ ℱ : Ultrafilter (G × X), ∀ x₁ x₂ : X,
+theorem foo_ultrafilter [T2Space X] : ProperSMul G X ↔ (∀ ℱ : Ultrafilter (G × X), ∀ x₁ x₂ : X,
     Tendsto (fun gx ↦ ⟨gx.1 • gx.2, gx.2⟩ : G × X → X × X) ℱ (𝓝 (x₁, x₂)) →
     ∃ g : G, Tendsto Prod.fst (ℱ : Filter (G × X)) (𝓝 g)) :=
   sorry
