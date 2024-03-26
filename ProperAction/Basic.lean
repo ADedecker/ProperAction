@@ -53,7 +53,7 @@ instance [ProperSMul G X] [ContinuousSMul G Y] : ProperSMul G (X × Y) where
       have : MapClusterPt (y.1.1, y.2.1) F (fun gxy => (gxy.1 • gxy.2.1, gxy.2.1)) := by sorry
       sorry
 
-open Filter Topology
+open Filter Topology Set
 
 
 theorem foo_ultrafilter : ProperSMul G X ↔ ContinuousSMul G X ∧ (∀ 𝒰 : Ultrafilter (G × X), ∀ x₁ x₂ : X,
@@ -152,14 +152,44 @@ instance {ι : Type*} {X : ι → Type*} [Π i, TopologicalSpace (X i)] [Π i, M
     [∀ i, ProperSMul G (X i)] : ProperSMul G (Π i, X i) where
   isProperMap_smul_pair' := sorry
 
-instance {H : Subgroup G} [ProperSMul G X] [IsClosed (H : Set G)] : ProperSMul H X where
-  isProperMap_smul_pair' := sorry
+instance {H : Subgroup G} [ProperSMul G X] [H_closed : IsClosed (H : Set G)] : ProperSMul H X where
+  isProperMap_smul_pair' := by
+    have : IsProperMap ((↑) : H → G) := by
+      rw [isProperMap_iff_isClosedMap_and_compact_fibers]
+      constructor
+      apply continuous_subtype_val
+      constructor
+      · exact H_closed.closedEmbedding_subtype_val.isClosedMap
+      · intro y
+        apply Set.Subsingleton.isCompact
+        apply Set.Subsingleton.preimage subsingleton_singleton Subtype.val_injective
+    have : IsProperMap (fun hx : H × X ↦ ((hx.1, hx.2) : G × X)) := by
+      change IsProperMap (Prod.map ((↑) : H → G) (fun x ↦ x))
+      apply IsProperMap.prod_map
+      assumption
+      exact isProperMap_id
+    have : IsProperMap (fun hx : H × X ↦ (hx.1 • hx.2, hx.2)) := by
+      change IsProperMap ((fun gx ↦ (gx.1 • gx.2, gx.2)) ∘ (fun hx : H × X ↦ ((hx.1, hx.2) : G × X)))
+      apply IsProperMap.comp
+      assumption
+      exact isProperMap_smul_pair G X
+    assumption
+
 
 -- for the one above, we may want to use this, or some variation of it:
 example {H : Type*} [Group H] [MulAction H X] [TopologicalSpace H] [ProperSMul G X]
     (f : H →* G) (f_clemb : ClosedEmbedding f) (f_compat : ∀ (h : H) (x : X), f h • x = h • x) :
     ProperSMul H X where
-  isProperMap_smul_pair' := sorry
+  isProperMap_smul_pair' := by
+    constructor
+    · rw [continuous_prod_mk]
+      constructor
+      have : fun gx : H × X ↦ gx.1 • gx.2 = fun gx : H × X ↦ f gx.1 • gx.2 :=
+      apply Continuous.smul
+      apply continuous_fst
+      apply continuous_snd
+      apply continuous_snd
+
 
 -- Some things to generalize
 #check t2Space_of_properlyDiscontinuousSMul_of_t2Space
