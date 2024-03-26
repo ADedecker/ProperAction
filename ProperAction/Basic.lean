@@ -120,7 +120,7 @@ theorem foo_ultrafilter_t2 [T2Space X] : ProperSMul G X ↔ ContinuousSMul G X �
     have := continuous_fst.tendsto (g, x)
     rw [Tendsto] at *
     calc
-      map Prod.fst ↑𝒰 ≤ map Prod.fst (𝓝 (g, x)) := map_le_map hgx
+      map Prod.fst ↑𝒰 ≤ map Prod.fst (𝓝 (g, x)) := map_mono hgx
       _ ≤ 𝓝 (g, x).1 := this
   · rintro ⟨cont, h⟩
     constructor
