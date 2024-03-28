@@ -29,7 +29,7 @@ lemma isProperMap_smul_pair (G X : Type*) [Group G] [MulAction G X]
 #check properSMul_iff
 #check properVAdd_iff
 
-variable {G X Y Z W : Type*} [g : Group G] [MulAction G X] [MulAction G Y]
+variable {G X Y Z W : Type*} [Group G] [MulAction G X] [MulAction G Y]
 variable [TopologicalSpace G] [TopologicalSpace X] [TopologicalSpace Y] [TopologicalSpace Z] [TopologicalSpace W]
 
 @[to_additive]
@@ -40,7 +40,48 @@ instance [ProperSMul G X] : ContinuousSMul G X where
 ### Some typical cases of proper actions
 -/
 
+--?
+#check fun (gx:G×X) ↦ gx.1 • gx.2
+-- #check fun gx ↦ gx.1 • gx.2
+-- #check (fun (g,x) ↦ (g • x, x))
+
 open Filter Topology
+
+-- use Quotient.mk _ instead of Quotient.mk'
+lemma image_is_preimage [SMul G X] :
+Set.range (fun ((g,x) : G × X) => (g • x, x)) -- graph of the orbit relation
+=
+(Prod.map (Quotient.mk _) (Quotient.mk _)) ⁻¹' Set.diagonal (Quotient (MulAction.orbitRel G X)) -- preimage of the diag
+:= by sorry-- the preimage of the diag is the graph of the relation
+-- ext ⟨x,y ⟩
+-- constructor
+-- · intro h
+--   rw [Set.mem_preimage] at h
+--   rw [Set.mem_diagonal_iff] at h
+--   change (π x = π y) at h
+--   replace h := Quotient.exact h
+--   change Setoid.Rel (MulAction.orbitRel G X) x y at h
+--   rw [MulAction.orbitRel_apply] at h
+--   rw [MulAction.orbit] at h
+--   choose g hg using h
+--   simp at hg
+--   rw [Set.mem_range]
+--   use (g,y)
+--   change (g • y, y) = (x, y)
+--   simp
+--   assumption
+-- · intro h
+-- rw [Set.mem_range] at h
+-- choose gy hgy using h
+-- set g := gy.1
+-- have gy2_y : gy.2 = y := by
+--   apply (congr_arg Prod.snd hgy)
+-- have gy_x : g • y = x := by
+--   change (gy.1 • gy.2, gy.2) = (x,y) at hgy
+--   rw [gy2_y] at hgy
+--   simp at hgy
+--   exact hgy
+-- sorry -- gx = y => π (x) = π (y) !
 
 /-
 Proof:
@@ -65,23 +106,24 @@ and the fact a QuotientMap whiches comes
 from the relation induced by a group action
 is moreover open,
 and the fact that CSO is table by product.
-
 -/
+
+lemma equiv_from_quotient {α:Type*} {s : Setoid α} {a b : α} : Quotient.mk' a = Quotient.mk' b ↔ a ≈ b := by
+  constructor
+  · exact Quotient.exact
+  · exact Quot.sound
+  -- already done in Quotient.eq'
+
 theorem t2Space_of_ProperSMul (hproper:ProperSMul G X) :
   T2Space (Quotient (MulAction.orbitRel G X)) := by
   rw [t2_iff_isClosed_diagonal] -- T2 if the diagonal is closed
   set R := MulAction.orbitRel G X -- the orbit relation
   set XmodG := Quotient R -- the quotient
   set π : X → XmodG := Quotient.mk' -- the projection
-  have hpiopen: IsOpenMap π := by -- the projection is open
-    apply isOpenMap_quotient_mk'_mul
+  have hpiopen: IsOpenMap π := -- the projection is open
+    isOpenMap_quotient_mk'_mul
   have picont : Continuous π := continuous_quotient_mk' -- π is continuous
   have pisurj : Function.Surjective π := by apply surjective_quotient_mk' -- π is surjective
-  have piquotient: QuotientMap π := by -- π is a QuotientMap ! shoud be already done somewhere
-    rw [QuotientMap]
-    constructor
-    apply surjective_quotient_mk'
-    rfl
   set pipi := Prod.map π π
   have pipiopen : IsOpenMap pipi := IsOpenMap.prod hpiopen hpiopen -- π × π open
   have pipisurj : (Function.Surjective (pipi) ) :=  -- π × π surj
@@ -93,38 +135,22 @@ theorem t2Space_of_ProperSMul (hproper:ProperSMul G X) :
   set m : G × X → X × X := fun (g,x) => (g • x, x)
   set gr := Set.range m -- graph of the orbit relation
   have r_eq_r' : gr' = gr := by -- the preimage of the diag is the graph of the relation
-    ext ⟨x,y ⟩
-    constructor
-    · intro h
-      rw [Set.mem_preimage] at h
-      rw [Set.mem_diagonal_iff] at h
-      change (π x = π y) at h
-      replace h := Quotient.exact h
-      change Setoid.Rel (MulAction.orbitRel G X) x y at h
-      rw [MulAction.orbitRel_apply] at h
-      rw [MulAction.orbit] at h
-      choose g hg using h
-      simp at hg
+    ext ⟨x,y⟩
+    conv_lhs => -- we work only on the left hand side for now
+      rw [Set.mem_preimage]
+      rw [Set.mem_diagonal_iff]
+      change (π x = π y)  --↔ (x, y) ∈ gr
+      rw [Quotient.eq']
+      change ((MulAction.orbitRel G X).Rel x y)-- ↔ (x, y) ∈ gr
+      rw [MulAction.orbitRel_apply]
+      rw [MulAction.orbit]
+      change (∃ g : G, g • y = x)
+    conv_rhs =>
       rw [Set.mem_range]
-      use (g,y)
-      change (g • y, y) = (x, y)
       simp
-      assumption
-    · intro h
-      rw [Set.mem_range] at h
-      choose gy hgy using h
-      set g := gy.1
-      have gy2_y : gy.2 = y := by
-        apply (congr_arg Prod.snd hgy)
-      have gy_x : g • y = x := by
-        change (gy.1 • gy.2, gy.2) = (x,y) at hgy
-        rw [gy2_y] at hgy
-        simp at hgy
-        exact hgy
-    sorry -- gx = y => π (x) = π (y) !
+    simp [m]
   rw [r_eq_r']
   exact hproper.isProperMap_smul_pair'.isClosedMap.closed_range
-
 
  /-
  apply a continuous map g to a Tendsto
