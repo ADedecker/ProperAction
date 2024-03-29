@@ -1,6 +1,6 @@
 import ProperAction.ProperMaps
-import Mathlib.Topology.Algebra.Group.Basic
-import Mathlib.Algebra.PUnitInstances
+import Mathlib.GroupTheory.Subgroup.Actions
+import Mathlib.Topology.Algebra.MulAction
 
 /-!
 # Proper group actions
